@@ -1,2 +1,3 @@
 iconst 3
+fconst 3
 top
