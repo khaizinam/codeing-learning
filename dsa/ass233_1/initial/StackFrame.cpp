@@ -4,7 +4,7 @@
 #include "errors.h"
 #include "constants.h"
 using namespace std;
-
+int _LINE_ = 1;
 // Default constructor
 Node::Node() : val(0), type(0), next(nullptr) {}
 
@@ -16,25 +16,39 @@ Node::~Node() {
     // No dynamic memory cleanup needed in this example
 }
 
-LinkedList::LinkedList() : head(nullptr), tail(nullptr), size(0) {}
+LinkedList::LinkedList(bool isStack, int maxSize) : head(nullptr), tail(nullptr), size(0),isStack(isStack),maxSize(maxSize)  {}
 
 void LinkedList::push(Node* newNode) {
-    if (head == nullptr) {
+
+    if(this->size >= this->maxSize ){
+        if(this->isStack)
+            throw StackFull(_LINE_);
+        else 
+            throw ArrayOutOfRange(_LINE_);
+    };
+
+    if (this->head == nullptr) {
         this->head = newNode;
         this->tail = newNode;
     } else {
         this->tail->next = newNode;
         this->tail = newNode;
     }
-
-    cout << "insert Node(" << newNode->val << "," << newNode->type << ");\n";
-
-    size++;
+    this->size += 1;
 }
 
 Node* LinkedList::pop() {
+
     if (this->head == nullptr) {
         return nullptr;
+    }
+
+    if(this->size == 1){
+        Node* tmp = this->head;
+        this->head = nullptr;
+        this->tail = nullptr;
+        this->size--;
+        return tmp;
     }
 
     Node* current = this->head;
@@ -74,6 +88,39 @@ Node* LinkedList::getIndex(int index) {
     return current;
 }
 
+void LinkedList::setData(Node* newNode, int index){
+    if (index < 0) {
+        return;
+    }
+
+    Node* tmp = this->head;
+
+    int walker = 0;
+    while (tmp != nullptr && walker < index) {
+        tmp = tmp->next;
+        walker++;
+    }
+
+    if (tmp == nullptr) {
+        return;
+    }
+
+    tmp->val = newNode->val;
+    tmp->type = newNode->type;
+}
+
+void LinkedList::print(){
+    if(this->size > 0){
+        Node* current = this->head;
+        cout << current->val << ", " << current->type;
+        while (current->next != nullptr)
+        {
+            current = current->next;
+            cout << ", " << current->val << ", " << current->type;
+        }
+    }
+}
+
 LinkedList::~LinkedList() {
     // Destructor: Clean up all nodes in the list
     Node* current = head;
@@ -85,21 +132,196 @@ LinkedList::~LinkedList() {
     }
 }
 
+void StackFrame::store(string code, int index) {
+    if( this->stack->size == 0 )
+        throw StackEmpty(_LINE_);
 
-StackFrame::StackFrame() : opStackMaxSize(OPERAND_STACK_MAX_SIZE), localVarArrSize(LOCAL_VARIABLE_ARRAY_SIZE), stack(new LinkedList()), memory(new LinkedList()) {}
+    if( (code == "istore" && this->stack->tail->type != INTEGER_TYPE )
+    || (code == "fstore" && this->stack->tail->type != FLOAT_TYPE ))
+        throw TypeMisMatch(_LINE_);
 
-void StackFrame::iconst(float val) { 
-    Node* newNode = new Node(val, 0);
+    int reIndex = index / 2;
+
+    // insert new adress
+    if(reIndex >= this->memory->size || reIndex == 0){
+        Node* tmp = this->stack->pop();
+        this->memory->push(tmp);
+
+    }else{
+        Node* tmp = this->stack->pop();
+        this->memory->setData(tmp, reIndex);
+    }
+}
+
+void StackFrame::varLoad(string code, int index) {
+    if( this->memory->size == 0 ) 
+        throw UndefinedVariable(_LINE_);
+    
+    int reIndex = index / 2;
+   
+    // insert new adress
+    if(reIndex <= this->memory->size){
+        Node* tmp = this->memory->getIndex(reIndex);
+        
+        if(tmp == nullptr ) 
+            throw UndefinedVariable(_LINE_);
+        
+        if(code == "iload" && tmp->type != INTEGER_TYPE) 
+            throw TypeMisMatch(_LINE_);
+
+        if(code == "fload" && tmp->type != FLOAT_TYPE) 
+            throw TypeMisMatch(_LINE_);
+
+        Node* newNode = new Node(tmp->val, tmp->type);
+        this->stack->push(newNode);
+    }
+}
+
+StackFrame::StackFrame() : opStackMaxSize(OPERAND_STACK_MAX_SIZE), localVarArrSize(LOCAL_VARIABLE_ARRAY_SIZE), stack(new LinkedList(true, this->opStackMaxSize)), memory(new LinkedList(false, this->localVarArrSize)) {}
+
+void StackFrame::print() {
+    cout << "stack: <";
+    this->stack->print();
+    cout << ">\n";
+
+    cout << "memory: [";
+    this->memory->print();
+    cout << "]\n";
+    cout << "------------------------------\n";
+}
+
+void StackFrame::varConst(string code, float val) { 
+    int _type = 0; // integer default
+
+    if(code == "fconst") _type = 1;
+
+    Node* newNode = new Node(val, _type);
     this->stack->push(newNode);
 }
 
-void StackFrame::fconst(float val) { 
-    Node* newNode = new Node(val, 1);
-    this->stack->push(newNode);
+void StackFrame::add(string code){
+    
+    if(this->stack->size < 2)
+        throw StackEmpty(_LINE_);
+
+    bool isInterType = code == "iadd";
+    Node* tmp = this->stack->pop();
+    
+    if(tmp->type != this->stack->tail->type)
+        throw TypeMisMatch(_LINE_);
+
+    if(isInterType){
+        if(tmp->type != INTEGER_TYPE)
+            throw TypeMisMatch(_LINE_);
+
+        this->stack->tail->val = (int)this->stack->tail->val + (int)tmp->val;
+    }
+    else {
+        if(tmp->type != FLOAT_TYPE)
+            throw TypeMisMatch(_LINE_);
+            
+        this->stack->tail->val += tmp->val;
+    }
+}
+
+void StackFrame::sub(string code){
+    
+    if(this->stack->size < 2)
+        throw StackEmpty(_LINE_);
+
+    bool isInterType = code == "isub";
+    Node* tmp = this->stack->pop();
+    
+    if(tmp->type != this->stack->tail->type)
+        throw TypeMisMatch(_LINE_);
+
+    if(isInterType){
+        if(tmp->type != INTEGER_TYPE)
+            throw TypeMisMatch(_LINE_);
+
+        this->stack->tail->val = (int)this->stack->tail->val - (int)tmp->val;
+    }
+    else {
+        if(tmp->type != FLOAT_TYPE)
+            throw TypeMisMatch(_LINE_);
+
+        this->stack->tail->val -= tmp->val;
+    }
+}
+
+void StackFrame::mul(string code){
+    if(this->stack->size < 2)
+        throw StackEmpty(_LINE_);
+
+    bool isInterType = code == "imul";
+    Node* tmp = this->stack->pop();
+
+    if(tmp->type != this->stack->tail->type)
+        throw TypeMisMatch(_LINE_);
+
+    if(isInterType){
+        if(tmp->type != INTEGER_TYPE)
+            throw TypeMisMatch(_LINE_);
+
+        this->stack->tail->val = (int)this->stack->tail->val * (int)tmp->val;
+    }
+    else {
+        if(tmp->type != FLOAT_TYPE)
+            throw TypeMisMatch(_LINE_);
+
+        this->stack->tail->val *= tmp->val;
+    }
+}
+
+void StackFrame::div(string code){
+    if(this->stack->size < 2)
+        throw StackEmpty(_LINE_);
+    
+    bool isInterType = code == "idiv";
+    Node* tmp = this->stack->pop();
+
+    if(tmp->type != this->stack->tail->type)
+        throw TypeMisMatch(_LINE_);
+
+    if(tmp->val == 0 )
+        throw DivideByZero(_LINE_);
+
+    if(isInterType){
+        if(tmp->type != INTEGER_TYPE)
+            throw TypeMisMatch(_LINE_);
+
+        this->stack->tail->val = (int)this->stack->tail->val / (int)tmp->val;
+    }
+    else {
+        if(tmp->type != FLOAT_TYPE)
+            throw TypeMisMatch(_LINE_);
+
+        this->stack->tail->val /= tmp->val;
+    }
+}
+
+void StackFrame::irem(){
+    if(this->stack->size < 2)
+        throw StackEmpty(_LINE_);
+
+    Node* tmp = this->stack->pop();
+
+    if(tmp->type != this->stack->tail->type)
+        throw TypeMisMatch(_LINE_);
+
+    if(tmp->type != INTEGER_TYPE)
+        throw TypeMisMatch(_LINE_);
+
+    if(tmp->val == 0 )
+        throw DivideByZero(_LINE_);
+        
+    this->stack->tail->val = (int)this->stack->tail->val % (int)tmp->val;
 }
 
 void StackFrame::top(){
     Node* tmp = this->stack->top();
+    if(tmp == nullptr) return;
+
     if(tmp->type == 1)
         cout << (int)tmp->val << "\n";
     else 
@@ -109,27 +331,55 @@ void StackFrame::top(){
 void StackFrame::run(string filename) {
 
     std::fstream file(filename, std::ios::in); // Open the file for reading
-
+    
     if (!file.is_open()) { return; }
 
     std::string javmCode;
     float value = 0.0f;
-
+    
     while (file >> javmCode) { // Read each "word" (token) from the file
         // Create Node objects based on javmCode and value
-        if (javmCode == "iconst") {
-            file >> value; 
-            this->iconst(value);
+        cout << javmCode << "\n";
 
-        } else if(javmCode == "fconst"){
+        if (javmCode == "iconst" || javmCode == "fconst") {
+            
             file >> value; 
-            this->fconst(value);
+            this->varConst(javmCode, value);
 
-        } else if(javmCode == "top") {
+        } else if( javmCode == "istore" || javmCode == "fstore"){
+            
+            file >> value; 
+            this->store(javmCode, (int)value);
+
+        }  else if(javmCode == "iload" || javmCode == "fload"){
+            
+            file >> value; 
+            this->varLoad(javmCode, (int)value);
+
+        } else if(javmCode == "iadd" || javmCode == "fadd"){
+            
+            this->add(javmCode);
+
+        } else if(javmCode == "isub" || javmCode == "fsub"){
+            
+            this->sub(javmCode);
+
+        } else if(javmCode == "imul" || javmCode == "fmul"){
+            this->mul(javmCode);
+
+        } else if(javmCode == "idiv" || javmCode == "fdiv"){
+
+            this->div(javmCode);
+
+        } else if(javmCode == "irem"){
+            this->irem();
+        }
+        else if(javmCode == "top") {
             this->top();
         }
 
-        // Add more conditions for other javmCode types if needed
+        this->print();
+        _LINE_++;
     }
 
     file.close(); // Close the file

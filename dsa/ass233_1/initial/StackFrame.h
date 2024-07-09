@@ -3,8 +3,8 @@
 
 #include <string>
 
-#define INTEGER_TYPE 0
-#define FLOAT_TYPE 1 
+const int INTEGER_TYPE = 0;
+const int  FLOAT_TYPE = 1;
 /*
 Node
 */
@@ -27,8 +27,10 @@ public:
     Node* head;
     Node* tail;
     int size;
+    bool isStack;
+    int maxSize;
 public:
-    LinkedList();
+    LinkedList(bool isStack, int maxSize);
 
     void push(Node* newNode); // push bash, increse size by 1;
 
@@ -37,6 +39,10 @@ public:
     Node* top(); // create new Node from tail -> return that node;
 
     Node* getIndex(int index); // get Node from index start from head;
+    
+    void setData(Node* newNode, int index); // update new Node to index
+    
+    void print();
 
     ~LinkedList();
 };
@@ -61,13 +67,25 @@ public:
     */
     void run(std::string filename);
 
-    void iconst(float val);
+    void varConst(std::string code, float val);
 
-    void fconst(float val);
+    void store(std::string code, int index);
 
-    void fconst(float val);
-    
+    void varLoad(std::string code, int index);
+
+    void add(std::string code);
+
+    void sub(std::string code);
+
+    void mul(std::string code);
+
+    void div(std::string code);
+
+    void irem();
+
     void top();
+
+    void print();
 };
 
 #endif // !__STACK_FRAME_H__
