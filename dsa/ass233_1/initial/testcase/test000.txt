@@ -1,7 +1,0 @@
-iconst 5
-istore 0
-iconst 2
-istore 2
-iload 0
-iload 2
-irem

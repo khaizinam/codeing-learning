@@ -329,7 +329,7 @@ void StackFrame::top(){
 }
 
 void StackFrame::run(string filename) {
-
+    _LINE_ = 1;
     std::fstream file(filename, std::ios::in); // Open the file for reading
     
     if (!file.is_open()) { return; }
@@ -339,7 +339,7 @@ void StackFrame::run(string filename) {
     
     while (file >> javmCode) { // Read each "word" (token) from the file
         // Create Node objects based on javmCode and value
-        cout << javmCode << "\n";
+        // cout << javmCode << "\n";
 
         if (javmCode == "iconst" || javmCode == "fconst") {
             
@@ -378,7 +378,7 @@ void StackFrame::run(string filename) {
             this->top();
         }
 
-        this->print();
+        // this->print();
         _LINE_++;
     }
 
