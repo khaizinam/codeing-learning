@@ -177,7 +177,7 @@ void StackFrame::varLoad(string code, int index) {
     }
 }
 
-StackFrame::StackFrame() : opStackMaxSize(OPERAND_STACK_MAX_SIZE), localVarArrSize(LOCAL_VARIABLE_ARRAY_SIZE), stack(new LinkedList(true, this->opStackMaxSize)), memory(new LinkedList(false, this->localVarArrSize)) {}
+StackFrame::StackFrame() : opStackMaxSize(OPERAND_STACK_MAX_SIZE), localVarArrSize(LOCAL_VARIABLE_ARRAY_SIZE), stack(new LinkedList(true, this->opStackMaxSize / 2)), memory(new LinkedList(false, this->localVarArrSize / 2)) {}
 
 void StackFrame::print() {
     cout << "stack: <";
