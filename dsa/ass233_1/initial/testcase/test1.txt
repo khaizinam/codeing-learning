@@ -1,5 +1,3 @@
-iconst 3
-istore 0
-iconst 3
-istore 0
-val 0
+fconst 3
+ineg
+top

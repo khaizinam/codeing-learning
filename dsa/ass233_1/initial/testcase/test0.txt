@@ -1,4 +1,3 @@
-fconst -2.9
 iconst 3
-fadd
+ineg
 top

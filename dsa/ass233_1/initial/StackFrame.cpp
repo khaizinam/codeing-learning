@@ -318,6 +318,32 @@ void StackFrame::irem(){
     this->stack->tail->val = (int)this->stack->tail->val % (int)tmp->val;
 }
 
+void StackFrame::neg(string code){
+
+    bool isIntegerType = code == "ineg";
+
+    if(this->stack->size == 0)
+        throw StackEmpty(_LINE_);
+
+    if ( (isIntegerType && this->stack->tail->type != INTEGER_TYPE )
+        || (!isIntegerType && this->stack->tail->type != FLOAT_TYPE )){
+        
+        throw TypeMisMatch(_LINE_);
+    }
+    if(isIntegerType){
+        
+        this->stack->tail->val = (int)(this->stack->tail->val * -1);
+    } else {
+        
+        this->stack->tail->val = this->stack->tail->val * -1;
+    }
+}
+
+void StackFrame::iand(){
+
+    
+}
+
 void StackFrame::top(){
     Node* tmp = this->stack->top();
     if(tmp == nullptr) return;
@@ -328,6 +354,25 @@ void StackFrame::top(){
         cout << tmp->val << "\n";
 }
 
+void StackFrame::val(int index){
+
+    if( this->memory->size == 0 ) 
+        throw UndefinedVariable(_LINE_);
+    
+    int reIndex = index / 2;
+
+    if(reIndex < 0 || reIndex > this->memory->size){
+        throw ArrayOutOfRange(_LINE_);
+    }
+
+    Node* tmp = this->memory->getIndex(reIndex);
+
+    if(tmp->type == INTEGER_TYPE) 
+        cout << (int)tmp->val << "\n";
+    else
+        cout << tmp->val << "\n";
+
+}
 void StackFrame::run(string filename) {
     _LINE_ = 1;
     std::fstream file(filename, std::ios::in); // Open the file for reading
@@ -372,10 +417,24 @@ void StackFrame::run(string filename) {
             this->div(javmCode);
 
         } else if(javmCode == "irem"){
+
             this->irem();
-        }
-        else if(javmCode == "top") {
+
+        } else if( javmCode == "ineg" || javmCode == "fneg" ){
+
+            this->neg(javmCode);
+
+        } else if( javmCode == "iand" ){
+
+            this->iand();
+
+        } else if(javmCode == "top") {
+            
             this->top();
+
+        } else if(javmCode == "val") {
+            file >> value; 
+            this->val((int)value);
         }
 
         // this->print();

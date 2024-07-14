@@ -83,7 +83,13 @@ public:
 
     void irem();
 
+    void neg(std::string code);
+
+    void iand();
+
     void top();
+
+    void val(int index);
 
     void print();
 };

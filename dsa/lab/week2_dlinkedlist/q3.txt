@@ -1,0 +1,89 @@
+template <class T>
+T DLinkedList<T>::removeAt(int index)
+{
+    /* Remove element at index and return removed value */
+    if(index < 0 || index > this->count) return -1;
+    
+    if(this->count == 1){
+        Node* tmp = this->head;
+        this->head = nullptr;
+        this->tail = nullptr;
+        T val = tmp->data;
+        delete tmp;
+        this->count--;
+        return val;
+    }
+    
+    if(index == 0){
+        Node* tmp = this->head;
+        this->head = this->head->next;
+        T val = tmp->data;
+        delete tmp;
+        this->count--;
+        return val;
+    }
+    
+    if(index == this->count - 1){
+        Node* tmp = this->tail;
+        this->tail = this->tail->previous;
+        T val = tmp->data;
+        delete tmp;
+        this->count--;
+        return val;
+    }
+    
+    Node* curr = this->head;
+    
+    for(int i = 0; i < index; i++)
+        curr = curr->next;
+
+    curr->previous = curr->next;
+    T val = curr->data;
+    delete curr;
+    this->count--;
+    return val;
+}
+
+template <class T>
+bool DLinkedList<T>::removeItem(const T& item)
+{
+    /* Remove the first apperance of item in list and return true, otherwise return false */
+
+    if(this->count == 0) return false;
+
+    Node* curr = this->head;
+    
+    for(int i = 0; i < this->count; i++){
+        if(curr->data == item){
+            this->removeAt(i);
+            return true;
+        }
+        curr = curr->next;
+    }
+    
+    return false;
+}
+
+template<class T>
+void DLinkedList<T>::clear(){
+    /* Remove all elements in list */
+    if(this->count == 0){
+        return;
+    }
+
+    this->tail = nullptr;
+    this->count = 0;
+    
+    if(this->count == 1){
+        Node* tmp = this->head;
+        this->head = nullptr;
+        delete tmp;
+        return;
+    }
+    
+    while(this->head->next != nullptr){
+        Node* tmp = this->head;
+        this->head = this->head->next;
+        delete tmp;
+    }
+}

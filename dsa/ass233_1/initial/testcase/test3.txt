@@ -1,7 +1,5 @@
 iconst 3
-iconst 2
-imul
-top
 istore 0
-iload 0
-top
+iconst 2
+istore 2
+val 0
