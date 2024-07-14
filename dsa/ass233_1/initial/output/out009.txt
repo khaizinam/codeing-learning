@@ -1,0 +1,8 @@
+push fload 0
+push fload 1
+push fload 2
+6
+push fload 0
+push fload 1
+push fload 2
+6

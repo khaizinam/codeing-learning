@@ -1,0 +1,2 @@
+push fload 2
+Stack empty: line 4

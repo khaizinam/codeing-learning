@@ -9,7 +9,7 @@ int _LINE_ = 1;
 Node::Node() : val(0), type(0), next(nullptr) {}
 
 // Constructor with parameters
-Node::Node(float value, int nodeType) : val(value), type(nodeType), next(nullptr) {}
+Node::Node(float value, int nodeType) : val(value), type(nodeType), index(-1), next(nullptr) {}
 
 // Destructor
 Node::~Node() {
@@ -132,49 +132,96 @@ LinkedList::~LinkedList() {
     }
 }
 
-void StackFrame::store(string code, int index) {
+void StackFrame::istore(int index) {
     if( this->stack->size == 0 )
         throw StackEmpty(_LINE_);
 
-    if( (code == "istore" && this->stack->tail->type != INTEGER_TYPE )
-    || (code == "fstore" && this->stack->tail->type != FLOAT_TYPE ))
+    if( this->stack->tail->type != INTEGER_TYPE )
         throw TypeMisMatch(_LINE_);
 
-    int reIndex = index / 2;
+    // int reIndex = index / 2;
 
-    // insert new adress
-    if(reIndex >= this->memory->size || reIndex == 0){
-        Node* tmp = this->stack->pop();
-        this->memory->push(tmp);
+    // // insert new adress
+    // if(reIndex >= this->memory->size || reIndex == 0){
+    //     Node* tmp = this->stack->pop();
+    //     this->memory->push(tmp);
 
-    }else{
-        Node* tmp = this->stack->pop();
-        this->memory->setData(tmp, reIndex);
-    }
+    // }else{
+    //     Node* tmp = this->stack->pop();
+    //     this->memory->setData(tmp, reIndex);
+    // }
 }
 
-void StackFrame::varLoad(string code, int index) {
-    if( this->memory->size == 0 ) 
-        throw UndefinedVariable(_LINE_);
+void StackFrame::istore(int index) {
+    if( this->stack->size == 0 )
+        throw StackEmpty(_LINE_);
+
+    if( this->stack->tail->type != FLOAT_TYPE )
+        throw TypeMisMatch(_LINE_);
+
+    // int reIndex = index / 2;
+
+    // // insert new adress
+    // if(reIndex >= this->memory->size || reIndex == 0){
+    //     Node* tmp = this->stack->pop();
+    //     this->memory->push(tmp);
+
+    // }else{
+    //     Node* tmp = this->stack->pop();
+    //     this->memory->setData(tmp, reIndex);
+    // }
+}
+
+void StackFrame::iload(int index) {
+    // if( this->memory->size == 0 ) 
+    //     throw UndefinedVariable(_LINE_);
     
-    int reIndex = index / 2;
+    // int reIndex = index / 2;
    
-    // insert new adress
-    if(reIndex <= this->memory->size){
-        Node* tmp = this->memory->getIndex(reIndex);
+    // // insert new adress
+    // if(reIndex <= this->memory->size){
+    //     Node* tmp = this->memory->getIndex(reIndex);
         
-        if(tmp == nullptr ) 
-            throw UndefinedVariable(_LINE_);
+    //     if(tmp == nullptr ) 
+    //         throw UndefinedVariable(_LINE_);
         
-        if(code == "iload" && tmp->type != INTEGER_TYPE) 
-            throw TypeMisMatch(_LINE_);
+    //     if(code == "iload" && tmp->type != INTEGER_TYPE) 
+    //         throw TypeMisMatch(_LINE_);
 
-        if(code == "fload" && tmp->type != FLOAT_TYPE) 
-            throw TypeMisMatch(_LINE_);
+    //     if(code == "fload" && tmp->type != FLOAT_TYPE) 
+    //         throw TypeMisMatch(_LINE_);
 
-        Node* newNode = new Node(tmp->val, tmp->type);
-        this->stack->push(newNode);
-    }
+    //     Node* newNode = new Node(tmp->val, tmp->type);
+
+        
+    //     this->stack->push(newNode);
+    // }
+}
+
+void StackFrame::fload(int index) {
+    // if( this->memory->size == 0 ) 
+    //     throw UndefinedVariable(_LINE_);
+    
+    // int reIndex = index / 2;
+   
+    // // insert new adress
+    // if(reIndex <= this->memory->size){
+    //     Node* tmp = this->memory->getIndex(reIndex);
+        
+    //     if(tmp == nullptr ) 
+    //         throw UndefinedVariable(_LINE_);
+        
+    //     if(code == "iload" && tmp->type != INTEGER_TYPE) 
+    //         throw TypeMisMatch(_LINE_);
+
+    //     if(code == "fload" && tmp->type != FLOAT_TYPE) 
+    //         throw TypeMisMatch(_LINE_);
+
+    //     Node* newNode = new Node(tmp->val, tmp->type);
+
+        
+    //     this->stack->push(newNode);
+    // }
 }
 
 StackFrame::StackFrame() : opStackMaxSize(OPERAND_STACK_MAX_SIZE), localVarArrSize(LOCAL_VARIABLE_ARRAY_SIZE), stack(new LinkedList(true, this->opStackMaxSize / 2)), memory(new LinkedList(false, this->localVarArrSize / 2)) {}
@@ -571,8 +618,9 @@ void StackFrame::f2i(){
 
 void StackFrame::top(){
     Node* tmp = this->stack->top();
-    if(tmp == nullptr) return;
-
+    if(tmp == nullptr) 
+        throw StackEmpty(_LINE_);
+        
     if(tmp->type == INTEGER_TYPE)
         cout << (int)tmp->val << "\n";
     else 
@@ -616,15 +664,25 @@ void StackFrame::run(string filename) {
             file >> value; 
             this->varConst(javmCode, value);
 
-        } else if( javmCode == "istore" || javmCode == "fstore"){
+        } else if(javmCode == "istore"){
             
             file >> value; 
-            this->store(javmCode, (int)value);
+            this->istore((int)value);
 
-        }  else if(javmCode == "iload" || javmCode == "fload"){
+        } else if(javmCode == "fstore"){
             
             file >> value; 
-            this->varLoad(javmCode, (int)value);
+            this->fstore((int)value);
+
+        } else if(javmCode == "iload"){
+            
+            file >> value; 
+            this->iload((int)value);
+
+        } else if(javmCode == "fload"){
+            
+            file >> value; 
+            this->fload((int)value);
 
         } else if(javmCode == "iadd" || javmCode == "fadd"){
             

@@ -12,6 +12,7 @@ class Node{
 public:
     float val;
     int type; // 0 : int , 1: flat
+    int index;
     Node* next;
 
 public:
@@ -69,9 +70,13 @@ public:
 
     void varConst(std::string code, float val);
 
-    void store(std::string code, int index);
+    void istore(int index);
 
-    void varLoad(std::string code, int index);
+    void fstore(int index);
+
+    void iload(int index);
+
+    void fload(int index);
 
     void add(std::string code);
 
