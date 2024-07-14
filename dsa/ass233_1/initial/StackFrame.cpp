@@ -340,15 +340,240 @@ void StackFrame::neg(string code){
 }
 
 void StackFrame::iand(){
+    if(this->stack->size < 2)
+        throw StackEmpty(_LINE_);
 
+    Node* tmp = this->stack->pop();
+
+    if(tmp->type != this->stack->tail->type)
+        throw TypeMisMatch(_LINE_);
+
+    if(tmp->type != INTEGER_TYPE)
+        throw TypeMisMatch(_LINE_);
     
+    this->stack->tail->val= (int)((int)tmp->val & (int)this->stack->tail->val );
+}
+
+void StackFrame::ior(){
+    if(this->stack->size < 2)
+        throw StackEmpty(_LINE_);
+
+    Node* tmp = this->stack->pop();
+
+    if(tmp->type != this->stack->tail->type)
+        throw TypeMisMatch(_LINE_);
+
+    if(tmp->type != INTEGER_TYPE)
+        throw TypeMisMatch(_LINE_);
+    
+    this->stack->tail->val= (int)((int)tmp->val | (int)this->stack->tail->val );
+}
+
+void StackFrame::ieq(){
+    if(this->stack->size < 2)
+        throw StackEmpty(_LINE_);
+
+    Node* tmp = this->stack->pop();
+
+    if(tmp->type != this->stack->tail->type)
+        throw TypeMisMatch(_LINE_);
+
+    if(tmp->type != INTEGER_TYPE)
+        throw TypeMisMatch(_LINE_);
+
+    int a = (int)this->stack->tail->val;
+    int b = (int)tmp->val;
+
+    bool result = a == b;
+
+    this->stack->tail->val = result ? 1 : 0;
+}
+
+void StackFrame::feq(){
+    if(this->stack->size < 2)
+        throw StackEmpty(_LINE_);
+
+    Node* tmp = this->stack->pop();
+
+    if(tmp->type != this->stack->tail->type)
+        throw TypeMisMatch(_LINE_);
+
+    if(tmp->type != FLOAT_TYPE)
+        throw TypeMisMatch(_LINE_);
+
+    float a = this->stack->tail->val;
+    float b = tmp->val;
+
+    bool result = a == b;
+
+    this->stack->tail->val = result ? 1 : 0;
+    this->stack->tail->type = INTEGER_TYPE;
+}
+
+void StackFrame::ineq(){
+    if(this->stack->size < 2)
+        throw StackEmpty(_LINE_);
+
+    Node* tmp = this->stack->pop();
+
+    if(tmp->type != this->stack->tail->type)
+        throw TypeMisMatch(_LINE_);
+
+    if(tmp->type != INTEGER_TYPE)
+        throw TypeMisMatch(_LINE_);
+
+    int a = (int)this->stack->tail->val;
+    int b = (int)tmp->val;
+
+    bool result = a != b;
+
+    this->stack->tail->val = result ? 1 : 0;
+}
+
+void StackFrame::fneq(){
+    if(this->stack->size < 2)
+        throw StackEmpty(_LINE_);
+
+    Node* tmp = this->stack->pop();
+
+    if(tmp->type != this->stack->tail->type)
+        throw TypeMisMatch(_LINE_);
+
+    if(tmp->type != FLOAT_TYPE)
+        throw TypeMisMatch(_LINE_);
+
+    float a = this->stack->tail->val;
+    float b = tmp->val;
+
+    bool result = a != b;
+
+    this->stack->tail->val = result ? 1 : 0;
+    this->stack->tail->type = INTEGER_TYPE;
+}
+
+void StackFrame::ilt(){
+    if(this->stack->size < 2)
+        throw StackEmpty(_LINE_);
+
+    Node* tmp = this->stack->pop();
+
+    if(tmp->type != this->stack->tail->type)
+        throw TypeMisMatch(_LINE_);
+
+    if(tmp->type != INTEGER_TYPE)
+        throw TypeMisMatch(_LINE_);
+
+    int a = (int)this->stack->tail->val;
+    int b = (int)tmp->val;
+
+    bool result = a < b;
+
+    this->stack->tail->val = result ? 1 : 0;
+}
+
+void StackFrame::flt(){
+    if(this->stack->size < 2)
+        throw StackEmpty(_LINE_);
+
+    Node* tmp = this->stack->pop();
+
+    if(tmp->type != this->stack->tail->type)
+        throw TypeMisMatch(_LINE_);
+
+    if(tmp->type != FLOAT_TYPE)
+        throw TypeMisMatch(_LINE_);
+
+    float a = this->stack->tail->val;
+    float b = tmp->val;
+
+    bool result = a < b;
+
+    this->stack->tail->val = result ? 1 : 0;
+    this->stack->tail->type = INTEGER_TYPE;
+}
+
+void StackFrame::igt(){
+    if(this->stack->size < 2)
+        throw StackEmpty(_LINE_);
+
+    Node* tmp = this->stack->pop();
+
+    if(tmp->type != this->stack->tail->type)
+        throw TypeMisMatch(_LINE_);
+
+    if(tmp->type != INTEGER_TYPE)
+        throw TypeMisMatch(_LINE_);
+
+    int a = (int)this->stack->tail->val;
+    int b = (int)tmp->val;
+
+    bool result = a > b;
+
+    this->stack->tail->val = result ? 1 : 0;
+}
+
+void StackFrame::fgt(){
+    if(this->stack->size < 2)
+        throw StackEmpty(_LINE_);
+
+    Node* tmp = this->stack->pop();
+
+    if(tmp->type != this->stack->tail->type)
+        throw TypeMisMatch(_LINE_);
+
+    if(tmp->type != FLOAT_TYPE)
+        throw TypeMisMatch(_LINE_);
+
+    float a = this->stack->tail->val;
+    float b = tmp->val;
+
+    bool result = a > b;
+
+    this->stack->tail->val = result ? 1 : 0;
+    this->stack->tail->type = INTEGER_TYPE;
+}
+
+void StackFrame::ibnot(){
+    if(this->stack->size == 0)
+        throw StackEmpty(_LINE_);
+
+    if(this->stack->tail->type != INTEGER_TYPE)
+        throw TypeMisMatch(_LINE_);
+
+    int a = (int)this->stack->tail->val;
+
+    bool result = a == 0;
+
+    this->stack->tail->val = result ? 1 : 0;
+}
+
+void StackFrame::i2f(){
+    if(this->stack->size == 0)
+        throw StackEmpty(_LINE_);
+
+    if(this->stack->tail->type != INTEGER_TYPE)
+        throw TypeMisMatch(_LINE_);
+
+    this->stack->tail->val = (float)this->stack->tail->val;
+    this->stack->tail->type = FLOAT_TYPE;
+}
+
+void StackFrame::f2i(){
+    if(this->stack->size == 0)
+        throw StackEmpty(_LINE_);
+
+    if(this->stack->tail->type != FLOAT_TYPE)
+        throw TypeMisMatch(_LINE_);
+
+    this->stack->tail->val = (int)this->stack->tail->val;
+    this->stack->tail->type = INTEGER_TYPE;
 }
 
 void StackFrame::top(){
     Node* tmp = this->stack->top();
     if(tmp == nullptr) return;
 
-    if(tmp->type == 1)
+    if(tmp->type == INTEGER_TYPE)
         cout << (int)tmp->val << "\n";
     else 
         cout << tmp->val << "\n";
@@ -427,6 +652,54 @@ void StackFrame::run(string filename) {
         } else if( javmCode == "iand" ){
 
             this->iand();
+
+        } else if( javmCode == "ior" ){
+
+            this->ior();
+
+        } else if( javmCode == "ieq" ){
+
+            this->ieq();
+
+        } else if( javmCode == "feq" ){
+
+            this->feq();
+
+        } else if( javmCode == "ineq" ){
+
+            this->ineq();
+
+        } else if( javmCode == "fneq" ){
+
+            this->fneq();
+
+        } else if( javmCode == "ilt" ){
+
+            this->ilt();
+
+        } else if( javmCode == "flt" ){
+
+            this->flt();
+
+        } else if( javmCode == "igt" ){
+
+            this->igt();
+
+        } else if( javmCode == "fgt" ){
+
+            this->fgt();
+
+        } else if( javmCode == "ibnot" ){
+
+            this->ibnot();
+
+        } else if( javmCode == "i2f" ){
+
+            this->i2f();
+
+        } else if( javmCode == "f2i" ){
+
+            this->f2i();
 
         } else if(javmCode == "top") {
             

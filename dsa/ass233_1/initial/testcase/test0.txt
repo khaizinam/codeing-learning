@@ -1,3 +1,4 @@
-iconst 3
-ineg
+fconst 25.01
+fconst 25.02
+fneq
 top

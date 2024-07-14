@@ -87,6 +87,30 @@ public:
 
     void iand();
 
+    void ior();
+
+    void ieq();
+
+    void feq();
+
+    void ineq();
+
+    void fneq();
+
+    void ilt();
+
+    void flt();
+
+    void igt();
+
+    void fgt();
+
+    void ibnot();
+
+    void i2f();
+
+    void f2i();
+
     void top();
 
     void val(int index);
