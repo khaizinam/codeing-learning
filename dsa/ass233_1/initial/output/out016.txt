@@ -1,3 +1,0 @@
-10
-0
-Divide by zero: line 5
