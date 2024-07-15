@@ -1,3 +1,4 @@
-fconst 2.2
-iconst 9
-fload 9
+iconst 5
+top
+i2f
+top
