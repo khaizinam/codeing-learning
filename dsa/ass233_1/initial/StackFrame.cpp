@@ -37,6 +37,43 @@ void LinkedList::push(Node* newNode) {
     this->size += 1;
 }
 
+void LinkedList::pushMemory(Node* newNode, int index) {
+    if (index < 0 || index >= this->maxSize - 1) {
+        throw ArrayOutOfRange(_LINE_);
+    }
+
+    // If the list is empty
+    if (head == nullptr) {
+        head = newNode;
+        tail = newNode;
+    }
+    // If inserting at the head
+    else if (index == 0) {
+        newNode->next = head;
+        head = newNode;
+    }
+    else {
+        // Traverse to find the node just before the index position
+        Node* current = head;
+        int currentIndex = 0;
+        while (current != nullptr && currentIndex < index - 1) {
+            current = current->next;
+            currentIndex++;
+        }
+
+        // Insert newNodeToInsert after current node
+        newNode->next = current->next;
+        current->next = newNode;
+
+        // If inserted at the end, update tail
+        if (newNode->next == nullptr) {
+            tail = newNode;
+        }
+    }
+
+    size++;
+}
+
 Node* LinkedList::pop() {
 
     if (this->head == nullptr) {
@@ -86,6 +123,24 @@ Node* LinkedList::getIndex(int index) {
     }
 
     return current;
+}
+
+Node* LinkedList::findIndex(int index) {
+    if (index < 0 || index >= this->maxSize - 1) {
+        throw ArrayOutOfRange(_LINE_);
+    }
+
+    // Traverse the list to find the node with the specified index
+    Node* current = head;
+    while (current != nullptr) {
+        if (current->index == index) {
+            // Node with the specified index found
+            return current;
+        }
+        current = current->next;
+    }
+
+    throw UndefinedVariable(_LINE_);
 }
 
 void LinkedList::setData(Node* newNode, int index){
@@ -139,92 +194,56 @@ void StackFrame::istore(int index) {
     if( this->stack->tail->type != INTEGER_TYPE )
         throw TypeMisMatch(_LINE_);
 
-    // int reIndex = index / 2;
-
-    // // insert new adress
-    // if(reIndex >= this->memory->size || reIndex == 0){
-    //     Node* tmp = this->stack->pop();
-    //     this->memory->push(tmp);
-
-    // }else{
-    //     Node* tmp = this->stack->pop();
-    //     this->memory->setData(tmp, reIndex);
-    // }
+    Node* tmp = this->stack->pop();
+    tmp->index = index;
+    this->memory->push(tmp);
 }
 
-void StackFrame::istore(int index) {
+void StackFrame::fstore(int index) {
     if( this->stack->size == 0 )
         throw StackEmpty(_LINE_);
 
     if( this->stack->tail->type != FLOAT_TYPE )
         throw TypeMisMatch(_LINE_);
 
-    // int reIndex = index / 2;
-
-    // // insert new adress
-    // if(reIndex >= this->memory->size || reIndex == 0){
-    //     Node* tmp = this->stack->pop();
-    //     this->memory->push(tmp);
-
-    // }else{
-    //     Node* tmp = this->stack->pop();
-    //     this->memory->setData(tmp, reIndex);
-    // }
+    Node* tmp = this->stack->pop();
+    tmp->index = index;
+    this->memory->push(tmp);
 }
 
 void StackFrame::iload(int index) {
-    // if( this->memory->size == 0 ) 
-    //     throw UndefinedVariable(_LINE_);
+    if( this->memory->size == 0 ) 
+        throw UndefinedVariable(_LINE_);
     
-    // int reIndex = index / 2;
-   
-    // // insert new adress
-    // if(reIndex <= this->memory->size){
-    //     Node* tmp = this->memory->getIndex(reIndex);
-        
-    //     if(tmp == nullptr ) 
-    //         throw UndefinedVariable(_LINE_);
-        
-    //     if(code == "iload" && tmp->type != INTEGER_TYPE) 
-    //         throw TypeMisMatch(_LINE_);
+    Node* tmp = this->memory->findIndex(index);
+    
+    if(tmp == nullptr ) 
+        throw UndefinedVariable(_LINE_);
+    
+    if(tmp->type != INTEGER_TYPE) 
+        throw TypeMisMatch(_LINE_);
 
-    //     if(code == "fload" && tmp->type != FLOAT_TYPE) 
-    //         throw TypeMisMatch(_LINE_);
-
-    //     Node* newNode = new Node(tmp->val, tmp->type);
-
-        
-    //     this->stack->push(newNode);
-    // }
+    Node* newNode = new Node(tmp->val, tmp->type);
+    this->stack->push(newNode);
 }
 
 void StackFrame::fload(int index) {
-    // if( this->memory->size == 0 ) 
-    //     throw UndefinedVariable(_LINE_);
+    if( this->memory->size == 0 ) 
+        throw UndefinedVariable(_LINE_);
     
-    // int reIndex = index / 2;
-   
-    // // insert new adress
-    // if(reIndex <= this->memory->size){
-    //     Node* tmp = this->memory->getIndex(reIndex);
-        
-    //     if(tmp == nullptr ) 
-    //         throw UndefinedVariable(_LINE_);
-        
-    //     if(code == "iload" && tmp->type != INTEGER_TYPE) 
-    //         throw TypeMisMatch(_LINE_);
+    Node* tmp = this->memory->findIndex(index);
+    
+    if(tmp == nullptr ) 
+        throw UndefinedVariable(_LINE_);
+    
+    if(tmp->type != FLOAT_TYPE) 
+        throw TypeMisMatch(_LINE_);
 
-    //     if(code == "fload" && tmp->type != FLOAT_TYPE) 
-    //         throw TypeMisMatch(_LINE_);
-
-    //     Node* newNode = new Node(tmp->val, tmp->type);
-
-        
-    //     this->stack->push(newNode);
-    // }
+    Node* newNode = new Node(tmp->val, tmp->type);
+    this->stack->push(newNode);
 }
 
-StackFrame::StackFrame() : opStackMaxSize(OPERAND_STACK_MAX_SIZE), localVarArrSize(LOCAL_VARIABLE_ARRAY_SIZE), stack(new LinkedList(true, this->opStackMaxSize / 2)), memory(new LinkedList(false, this->localVarArrSize / 2)) {}
+StackFrame::StackFrame() : opStackMaxSize(OPERAND_STACK_MAX_SIZE), localVarArrSize(LOCAL_VARIABLE_ARRAY_SIZE), stack(new LinkedList(true, this->opStackMaxSize / 2)), memory(new LinkedList(false, this->localVarArrSize)) {}
 
 void StackFrame::print() {
     cout << "stack: <";
@@ -247,52 +266,50 @@ void StackFrame::varConst(string code, float val) {
 }
 
 void StackFrame::add(string code){
-    
     if(this->stack->size < 2)
         throw StackEmpty(_LINE_);
 
     bool isInterType = code == "iadd";
-    Node* tmp = this->stack->pop();
     
-    if(tmp->type != this->stack->tail->type)
-        throw TypeMisMatch(_LINE_);
+    Node* tmp = this->stack->pop();
 
     if(isInterType){
+        if(tmp->type != this->stack->tail->type)
+            throw TypeMisMatch(_LINE_);
+
         if(tmp->type != INTEGER_TYPE)
             throw TypeMisMatch(_LINE_);
 
         this->stack->tail->val = (int)this->stack->tail->val + (int)tmp->val;
     }
-    else {
-        if(tmp->type != FLOAT_TYPE)
-            throw TypeMisMatch(_LINE_);
-            
-        this->stack->tail->val += tmp->val;
+    else {       
+        float a = this->stack->tail->val;
+        float b = tmp->val;
+        this->stack->tail->val = (float)(a + b);
+        this->stack->tail->type = FLOAT_TYPE;
     }
 }
 
 void StackFrame::sub(string code){
-    
     if(this->stack->size < 2)
         throw StackEmpty(_LINE_);
 
     bool isInterType = code == "isub";
     Node* tmp = this->stack->pop();
     
-    if(tmp->type != this->stack->tail->type)
-        throw TypeMisMatch(_LINE_);
-
     if(isInterType){
+        if(tmp->type != this->stack->tail->type)
+            throw TypeMisMatch(_LINE_);
+
         if(tmp->type != INTEGER_TYPE)
             throw TypeMisMatch(_LINE_);
 
         this->stack->tail->val = (int)this->stack->tail->val - (int)tmp->val;
-    }
-    else {
-        if(tmp->type != FLOAT_TYPE)
-            throw TypeMisMatch(_LINE_);
-
-        this->stack->tail->val -= tmp->val;
+    } else {       
+        float a = this->stack->tail->val;
+        float b = tmp->val;
+        this->stack->tail->val = (float)(a - b);
+        this->stack->tail->type = FLOAT_TYPE;
     }
 }
 
@@ -303,20 +320,19 @@ void StackFrame::mul(string code){
     bool isInterType = code == "imul";
     Node* tmp = this->stack->pop();
 
-    if(tmp->type != this->stack->tail->type)
-        throw TypeMisMatch(_LINE_);
-
     if(isInterType){
+        if(tmp->type != this->stack->tail->type)
+            throw TypeMisMatch(_LINE_);
+
         if(tmp->type != INTEGER_TYPE)
             throw TypeMisMatch(_LINE_);
 
         this->stack->tail->val = (int)this->stack->tail->val * (int)tmp->val;
-    }
-    else {
-        if(tmp->type != FLOAT_TYPE)
-            throw TypeMisMatch(_LINE_);
-
-        this->stack->tail->val *= tmp->val;
+    } else {       
+        float a = this->stack->tail->val;
+        float b = tmp->val;
+        this->stack->tail->val = (float)(a * b);
+        this->stack->tail->type = FLOAT_TYPE;
     }
 }
 
@@ -327,23 +343,24 @@ void StackFrame::div(string code){
     bool isInterType = code == "idiv";
     Node* tmp = this->stack->pop();
 
-    if(tmp->type != this->stack->tail->type)
-        throw TypeMisMatch(_LINE_);
-
     if(tmp->val == 0 )
         throw DivideByZero(_LINE_);
 
     if(isInterType){
+        if(tmp->type != this->stack->tail->type)
+            throw TypeMisMatch(_LINE_);
+
         if(tmp->type != INTEGER_TYPE)
             throw TypeMisMatch(_LINE_);
 
-        this->stack->tail->val = (int)this->stack->tail->val / (int)tmp->val;
-    }
-    else {
-        if(tmp->type != FLOAT_TYPE)
-            throw TypeMisMatch(_LINE_);
-
-        this->stack->tail->val /= tmp->val;
+        int a = this->stack->tail->val;
+        int b = tmp->val;
+        this->stack->tail->val = (int)(a / b);
+    } else {       
+        float a = this->stack->tail->val;
+        float b = tmp->val;
+        this->stack->tail->val = (float)(a / b);
+        this->stack->tail->type = FLOAT_TYPE;
     }
 }
 
@@ -372,17 +389,15 @@ void StackFrame::neg(string code){
     if(this->stack->size == 0)
         throw StackEmpty(_LINE_);
 
-    if ( (isIntegerType && this->stack->tail->type != INTEGER_TYPE )
-        || (!isIntegerType && this->stack->tail->type != FLOAT_TYPE )){
-        
+    if ( isIntegerType && this->stack->tail->type != INTEGER_TYPE ){
         throw TypeMisMatch(_LINE_);
     }
-    if(isIntegerType){
-        
+
+    if(isIntegerType){  
         this->stack->tail->val = (int)(this->stack->tail->val * -1);
     } else {
-        
         this->stack->tail->val = this->stack->tail->val * -1;
+        this->stack->tail->type = FLOAT_TYPE;
     }
 }
 
@@ -442,11 +457,11 @@ void StackFrame::feq(){
 
     Node* tmp = this->stack->pop();
 
-    if(tmp->type != this->stack->tail->type)
-        throw TypeMisMatch(_LINE_);
+    // if(tmp->type != this->stack->tail->type)
+    //     throw TypeMisMatch(_LINE_);
 
-    if(tmp->type != FLOAT_TYPE)
-        throw TypeMisMatch(_LINE_);
+    // if(tmp->type != FLOAT_TYPE)
+    //     throw TypeMisMatch(_LINE_);
 
     float a = this->stack->tail->val;
     float b = tmp->val;
@@ -483,11 +498,11 @@ void StackFrame::fneq(){
 
     Node* tmp = this->stack->pop();
 
-    if(tmp->type != this->stack->tail->type)
-        throw TypeMisMatch(_LINE_);
+    // if(tmp->type != this->stack->tail->type)
+    //     throw TypeMisMatch(_LINE_);
 
-    if(tmp->type != FLOAT_TYPE)
-        throw TypeMisMatch(_LINE_);
+    // if(tmp->type != FLOAT_TYPE)
+    //     throw TypeMisMatch(_LINE_);
 
     float a = this->stack->tail->val;
     float b = tmp->val;
@@ -524,11 +539,11 @@ void StackFrame::flt(){
 
     Node* tmp = this->stack->pop();
 
-    if(tmp->type != this->stack->tail->type)
-        throw TypeMisMatch(_LINE_);
+    // if(tmp->type != this->stack->tail->type)
+    //     throw TypeMisMatch(_LINE_);
 
-    if(tmp->type != FLOAT_TYPE)
-        throw TypeMisMatch(_LINE_);
+    // if(tmp->type != FLOAT_TYPE)
+    //     throw TypeMisMatch(_LINE_);
 
     float a = this->stack->tail->val;
     float b = tmp->val;
@@ -565,11 +580,11 @@ void StackFrame::fgt(){
 
     Node* tmp = this->stack->pop();
 
-    if(tmp->type != this->stack->tail->type)
-        throw TypeMisMatch(_LINE_);
+    // if(tmp->type != this->stack->tail->type)
+    //     throw TypeMisMatch(_LINE_);
 
-    if(tmp->type != FLOAT_TYPE)
-        throw TypeMisMatch(_LINE_);
+    // if(tmp->type != FLOAT_TYPE)
+    //     throw TypeMisMatch(_LINE_);
 
     float a = this->stack->tail->val;
     float b = tmp->val;
@@ -631,14 +646,12 @@ void StackFrame::val(int index){
 
     if( this->memory->size == 0 ) 
         throw UndefinedVariable(_LINE_);
-    
-    int reIndex = index / 2;
 
-    if(reIndex < 0 || reIndex > this->memory->size){
+    if(index < 0 || index >= this->memory->maxSize - 1){
         throw ArrayOutOfRange(_LINE_);
     }
 
-    Node* tmp = this->memory->getIndex(reIndex);
+    Node* tmp = this->memory->findIndex(index);
 
     if(tmp->type == INTEGER_TYPE) 
         cout << (int)tmp->val << "\n";

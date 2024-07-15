@@ -1,3 +1,2 @@
 6
-push fload 0
 6

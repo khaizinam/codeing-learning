@@ -1,3 +1,1 @@
-push fload 0
-push fload 1
-Type mismatch: line 7
+10.5

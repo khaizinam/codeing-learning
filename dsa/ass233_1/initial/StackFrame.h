@@ -35,6 +35,10 @@ public:
 
     void push(Node* newNode); // push bash, increse size by 1;
 
+    void pushMemory(Node* newNode, int index); // push bash, increse size by 1;
+
+    Node* findIndex(int index);
+
     Node* pop(); // create new Node from tail -> return that node -> delete tail;
 
     Node* top(); // create new Node from tail -> return that node;

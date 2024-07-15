@@ -1,2 +1,1 @@
-push fload 2
-Stack empty: line 4
+-3.5

@@ -24,16 +24,16 @@ void test(string filename) {
 Main function
 */
 int main(int argc, char **argv) {
-    int max = 9;
-    int flag = 0;
+    int max = 28;
+    int flag = 10;
     char filename[50]; // Assuming a reasonable maximum length for filename
     char output_file_name[50]; // Assuming a reasonable maximum length for filename
     char sol_file_name[50]; // Assuming a reasonable maximum length for filename
     
     while (flag <= max) {
-        sprintf(filename, "testcase/test00%d.txt", flag);
+        sprintf(filename, "testcase/test0%d.txt", flag);
 
-        sprintf(output_file_name, "output/out00%d.txt", flag);
+        sprintf(output_file_name, "output/out0%d.txt", flag);
 
         freopen(output_file_name,"w",stdout);
 
@@ -41,6 +41,5 @@ int main(int argc, char **argv) {
 
         flag++;
     }
-    test(filename);
     return 0;
 }
